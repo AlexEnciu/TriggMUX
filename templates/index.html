@@ -1,0 +1,158 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYDRA Trigg Control</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            font-size: 16px;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .led {
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+            margin: 10px;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        select {
+            font-size: 16px;
+            margin: 5px;
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>HYDRA Trigg Control</h1>
+        
+        <button onclick="togglePin(14)">Toggle Enable</button>
+        <button onclick="togglePin(15)">Toggle S0</button>
+        <button onclick="togglePin(18)">Toggle S1</button>
+        <button onclick="togglePin(23)">Toggle S2</button>
+        <button onclick="togglePin(24)">Toggle S3</button>
+
+        <label for="muxChannel">Select MUX Output Channel:</label>
+        <select id="muxChannel">
+            <option value="0">LASER</option>
+            <option value="1">Plastic Wall</option>
+            <option value="2">Channel 2</option>
+            <option value="2">Channel 3</option>
+            <option value="2">Channel 4</option>
+            <option value="2">Channel 5</option>
+            <option value="2">Channel 6</option>
+            <option value="2">Channel 7</option>
+            <option value="2">Channel 8</option>
+            <option value="2">Channel 9</option>
+            <option value="2">Channel 10</option>
+            <option value="2">Channel 11</option>
+            <option value="2">Channel 12</option>
+            <option value="2">Channel 13</option>
+            <option value="2">Channel 14</option>
+            <option value="2">Channel 15</option>
+            <!-- Add options for all 16 channels as needed -->
+        </select>
+        <button onclick="applyMuxChannel()">Apply MUX Channel</button>
+
+        <div id="status"></div>
+
+        <div id="led-enable" class="led"></div>
+        <div id="led-s0" class="led"></div>
+        <div id="led-s1" class="led"></div>
+        <div id="led-s2" class="led"></div>
+        <div id="led-s3" class="led"></div>
+    </div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        var buttonStates = {
+            14: false,
+            15: false,
+            18: false,
+            23: false,
+            24: false
+        };
+
+        function togglePin(pin) {
+            buttonStates[pin] = !buttonStates[pin];
+            var action = buttonStates[pin] ? 'on' : 'off';
+            socket.emit('button_click', {'pin': pin, 'action': action});
+            var buttonText = action === 'on' ? 'Enabled' : 'Disabled';
+            document.getElementById('status').innerHTML = 'Pin ' + pin + ' is ' + buttonText;
+        }
+
+        socket.on('update_led_status', function(ledStatuses) {
+            for (var ledId in ledStatuses) {
+                var ledElement = document.getElementById(ledId);
+                var status = ledStatuses[ledId];
+
+                if (status !== undefined) {
+                    if (ledId === 'mux-channel') {
+                        document.getElementById('muxChannel').value = status;
+                    } else {
+                        if (status) {
+                            ledElement.style.backgroundColor = '#4CAF50';
+                        } else {
+                            ledElement.style.backgroundColor = '#ccc';
+                        }
+                    }
+                }
+            }
+        });
+
+        function applyMuxChannel() {
+            var selectedChannel = document.getElementById('muxChannel').value;
+            socket.emit('apply_mux_channel', {'channel': selectedChannel});
+        }
+    </script>
+</body>
+</html>
