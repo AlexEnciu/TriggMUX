@@ -18,7 +18,7 @@ for pin in [enable_pin] + s_pins+pwm_pins:
     GPIO.output(pin, GPIO.LOW)
 
 # Set up PWM
-pwm_12 = GPIO.PWM(12, 1000)  # PWM frequency of 1 kHz on GPIO 12
+pwm_12 = GPIO.PWM(12, 500)  # PWM frequency of 1 kHz on GPIO 12
 pwm_13 = GPIO.PWM(13, 3000)  # PWM frequency of 2 kHz on GPIO 13
 
 # Start PWM with 0% duty cycle initially
