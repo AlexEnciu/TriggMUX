@@ -30,14 +30,7 @@ mux_channel = 0  # Default MUX channel
 # Index route
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-# WebSocket event handler for applying the selected MUX channel
-@socketio.on('apply_mux_channel')
-def handle_mux_channel(data):
-    global mux_channel
-    mux_channel = int(data['channel'])
-    send_led_status()
+    return render_template('index.html'),update_gpio_states(),send_led_status()
 
 # WebSocket event handler for button clicks
 @socketio.on('button_click')
