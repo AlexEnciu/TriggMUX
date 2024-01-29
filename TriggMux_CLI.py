@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import timeit
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)
@@ -30,7 +31,7 @@ pwm_13.start(50)
 counter = 0
 manual_mode = False  # Initial mode is automatic
 last_pulse_time = time.time()
-
+last_emit_time=0
 
 def update_gpio_states(mux_channel):
     # Calculate the binary representation of the MUX channel
@@ -45,22 +46,24 @@ def laser_trigg(channel):
     # switch to laser
     update_gpio_states(0)
     print("Beam Off, LASER ON")
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
 def pw_trigg(channel):
     # switch to PlasticWall
     update_gpio_states(1)
     print("Beam On, Plastic Wall ON")
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
 def pulse_counter(channel):
-    global counter, last_pulse_time
-    counter += 1
+    global last_pulse_time,last_emit_time
     current_time = time.time()
     time_difference = current_time - last_pulse_time
     last_pulse_time = current_time
     rate = 1 / time_difference if time_difference > 0 else 0
-    print(f"\rRate: {rate:.2f} Hz ",end='', flush=True)
+    if current_time - last_emit_time > 2:
+        print(f"\rRate: {rate:.2f} Hz ",end='', flush=True)
+        last_emit_time = current_time
+    
 
 
 def setup_event_detection():
